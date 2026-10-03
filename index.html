@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en" id="html-root">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishGuard Pro - Advanced Phishing Detector</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" 
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
+          crossorigin="anonymous" 
+          referrerpolicy="no-referrer">
+    
+    <!-- External CSS with cache-busting -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=2024">
+    
+    <!-- ============================================
+         THEME OVERRIDE - INLINE FOR GUARANTEED SWITCHING
+         This has HIGHER priority than external CSS
+         ============================================ -->
+    <style id="theme-override">
+        /* ============================================
+           DARK MODE (DEFAULT)
+           ============================================ */
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-container: rgba(255, 255, 255, 0.05);
+            --bg-input: rgba(255, 255, 255, 0.06);
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --bg-metric: rgba(255, 255, 255, 0.02);
+            --bg-stats: rgba(255, 255, 255, 0.02);
+            --bg-explanation: rgba(255, 255, 255, 0.02);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-muted: rgba(255, 255, 255, 0.4);
+            --text-dim: rgba(255, 255, 255, 0.3);
+            --text-light: rgba(255, 255, 255, 0.2);
+            --border-color: rgba(255, 255, 255, 0.06);
+            --border-light: rgba(255, 255, 255, 0.04);
+            --border-input: rgba(255, 255, 255, 0.08);
+            --color-primary: #667eea;
+            --color-success: #48bb78;
+            --color-danger: #fc8181;
+        }
+        
+        /* Dark mode body */
+        html body {
+            background: #0a0e1a !important;
+            color: #ffffff !important;
+        }
+        
+        /* ============================================
+           LIGHT MODE (OVERRIDES - HIGHEST PRIORITY)
+           ============================================ */
+        html.light-mode {
+            --bg-primary: #f0f2f5 !important;
+            --bg-container: rgba(255, 255, 255, 0.95) !important;
+            --bg-input: rgba(0, 0, 0, 0.04) !important;
+            --bg-card: rgba(0, 0, 0, 0.03) !important;
+            --bg-metric: rgba(0, 0, 0, 0.02) !important;
+            --bg-stats: rgba(0, 0, 0, 0.02) !important;
+            --bg-explanation: rgba(0, 0, 0, 0.02) !important;
+            --text-primary: #1a1a2e !important;
+            --text-secondary: rgba(0, 0, 0, 0.7) !important;
+            --text-muted: rgba(0, 0, 0, 0.4) !important;
+            --text-dim: rgba(0, 0, 0, 0.3) !important;
+            --text-light: rgba(0, 0, 0, 0.2) !important;
+            --border-color: rgba(0, 0, 0, 0.06) !important;
+            --border-light: rgba(0, 0, 0, 0.04) !important;
+            --border-input: rgba(0, 0, 0, 0.08) !important;
+        }
+        
+        /* Body */
+        html.light-mode body {
+            background: #f0f2f5 !important;
+            color: #1a1a2e !important;
+        }
+        
+        /* Container */
+        html.light-mode .container {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border-color: rgba(0, 0, 0, 0.08) !important;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        /* Header */
+        html.light-mode header {
+            border-bottom-color: rgba(0, 0, 0, 0.06) !important;
+        }
+        
+        html.light-mode h1 {
+            color: #1a1a2e !important;
+        }
+        
+        html.light-mode .subtitle {
+            color: rgba(0, 0, 0, 0.5) !important;
+        }
+        
+        /* Status Badge */
+        html.light-mode .status-badge {
+            background: rgba(72, 187, 120, 0.1) !important;
+            color: #276749 !important;
+            border-color: rgba(72, 187, 120, 0.2) !important;
+        }
+        
+        /* Theme Toggle */
+        html.light-mode .theme-toggle {
+            background: rgba(0, 0, 0, 0.06) !important;
+            border-color: rgba(0, 0, 0, 0.08) !important;
+            color: rgba(0, 0, 0, 0.6) !important;
+        }
+        
+        html.light-mode .theme-toggle:hover {
+            background: rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        /* Search */
+        html.light-mode .search-wrapper {
+            background: rgba(0, 0, 0, 0.04) !important;
+            border-color: rgba(0, 0, 0, 0.08) !important;
+        }
+        
+        html.light-mode #urlInput {
+            color: #1a1a2e !important;
+        }
+        
+        html.light-mode #urlInput::placeholder {
+            color: rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        html.light-mode .input-icon {
+            color: rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        /* Quick Tests */
+        html.light-mode .quick-label {
+            color: rgba(0, 0, 0, 0.4) !important;
+        }
+        
+        html.light-mode .test-btn {
+            background: rgba(0, 0, 0, 0.04) !important;
+            border-color: rgba(0, 0, 0, 0.08) !important;
+            color: rgba(0, 0, 0, 0.6) !important;
+        }
+        
+        html.light-mode .test-btn.phishing {
+            color: #e53e3e !important;
+            border-color: rgba(229, 62, 62, 0.3) !important;
+        }
+        
+        html.light-mode .test-btn.safe {
+            color: #276749 !important;
+            border-color: rgba(56, 161, 105, 0.3) !important;
+        }
+        
+        /* Loading */
+        html.light-mode .loading-text h3 {
+            color: #1a1a2e !important;
+        }
+        
+        html.light-mode .loading-text p {
+            color: rgba(0, 0, 0, 0.4) !important;
+        }
+        
+        html.light-mode .step {
+            background: rgba(0, 0, 0, 0.03) !important;
+            color: rgba(0, 0, 0, 0.4) !important;
+            border-color: rgba(0, 0, 0, 0.03) !important;
+        }
+        
+        html.light-mode .step.active {
+            color: #1a1a2e !important;
+            border-color: #667eea !important;
+            background: rgba(102, 126, 234, 0.1) !important;
+        }
+        
+        html.light-mode .step.done {
+            color: #276749 !important;
+            border-color: #276749 !important;
+        }
+        
+        /* Result Card */
+        html.light-mode .result-card {
+            background: rgba(0, 0, 0, 0.03) !important;
+            border-color: rgba(0, 0, 0, 0.06) !important;
+        }
+        
+        html.light-mode .result-header {
+            background: rgba(0, 0, 0, 0.02) !important;
+            border-bottom-color: rgba(0, 0, 0, 0.04) !important;
+        }
+        
+        html.light-mode .result-title h2 {
+            color: #1a1a2e !important;
+        }
+        
+        html.light-mode .result-title p {
+            color: rgba(0, 0, 0, 0.4) !important;
+        }
+        
+        html.light-mode .result-score {
+            background: rgba(0, 0, 0, 0.04) !important;
+            border-color: rgba(0, 0, 0, 0.04) !important;
+        }
+        
+        html.light-mode .score-label {
+            color: rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        html.light-mode .score-value {
+            color: #1a1a2e !important;
+        }
+        
+        /* Risk Factors */
+        html.light-mode .risk-factors h3 {
+            color: #1a1a2e !important;
+        }
+        
+        html.light-mode .risk-tag {
+            background: rgba(229, 62, 62, 0.08) !important;
+            border-color: rgba(229, 62, 62, 0.2) !important;
+            color: #e53e3e !important;
+        }
+        
+        html.light-mode .risk-tag.safe {
+            background: rgba(56, 161, 105, 0.08) !important;
+            border-color: rgba(56, 161, 105, 0.2) !important;
+            color: #276749 !important;
+        }
+        
+        /* Explanation */
+        html.light-mode .explanation-box {
+            background: rgba(0, 0, 0, 0.02) !important;
+            border-color: rgba(0, 0, 0, 0.04) !important;
+        }
+        
+        html.light-mode .explanation-box h3 {
+            color: #1a1a2e !important;
+        }
+        
+        html.light-mode .explanation-text {
+            color: rgba(0, 0, 0, 0.7) !important;
+        }
+        
+        /* Metrics */
+        html.light-mode .metric-card {
+            background: rgba(0, 0, 0, 0.02) !important;
+            border-color: rgba(0, 0, 0, 0.04) !important;
+        }
+        
+        html.light-mode .metric-label {
+            color: rgba(0, 0, 0, 0.4) !important;
+        }
+        
+        html.light-mode .metric-value {
+            color: #1a1a2e !important;
+        }
+        
+        html.light-mode .progress-bar {
+            background: rgba(0, 0, 0, 0.06) !important;
+        }
+        
+        html.light-mode .metrics-details {
+            background: rgba(0, 0, 0, 0.02) !important;
+            border-color: rgba(0, 0, 0, 0.04) !important;
+        }
+        
+        html.light-mode .metrics-details h3 {
+            color: #1a1a2e !important;
+        }
+        
+        html.light-mode .metric-item .metric-label {
+            color: rgba(0, 0, 0, 0.4) !important;
+        }
+        
+        html.light-mode .metric-item .metric-value {
+            color: #1a1a2e !important;
+        }
+        
+        /* Stats Footer */
+        html.light-mode .stats-footer {
+            background: rgba(0, 0, 0, 0.02) !important;
+            border-color: rgba(0, 0, 0, 0.04) !important;
+        }
+        
+        html.light-mode .stat-item span {
+            color: rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        html.light-mode .stat-item strong {
+            color: #1a1a2e !important;
+        }
+        
+        /* Footer */
+        html.light-mode footer {
+            color: rgba(0, 0, 0, 0.3) !important;
+            border-top-color: rgba(0, 0, 0, 0.04) !important;
+        }
+        
+        /* Background circles */
+        html.light-mode .bg-circle {
+            opacity: 0.06 !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="bg-circle"></div>
+        <div class="bg-circle"></div>
+        <div class="bg-circle"></div>
+        <div class="bg-circle"></div>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <i class="fas fa-shield-halved"></i>
+                </div>
+                <div>
+                    <h1>PhishGuard <span class="badge">PRO</span></h1>
+                    <p class="subtitle">Advanced Phishing URL Detection System</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="status-badge">
+                    <span class="dot online"></span>
+                    <span>System Active</span>
+                    <span class="status-time" id="responseTime">< 300ms</span>
+                </div>
+                <!-- Dark/Light Mode Toggle -->
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <span id="themeIcon">🌙</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <div class="search-wrapper">
+                <div class="input-icon">
+                    <i class="fas fa-link"></i>
+                </div>
+                <input type="text" id="urlInput" placeholder="Paste any URL to check for phishing..." autofocus>
+                <button id="checkBtn">
+                    <i class="fas fa-shield"></i>
+                    Check URL
+                </button>
+            </div>
+            <div class="quick-tests">
+                <span class="quick-label"><i class="fas fa-bolt"></i> Quick Tests:</span>
+                <button class="test-btn phishing" data-url="http://secure-login-paypal.com">
+                    <i class="fas fa-skull"></i> Phishing
+                </button>
+                <button class="test-btn safe" data-url="https://www.google.com">
+                    <i class="fas fa-check-circle"></i> Safe
+                </button>
+                <button class="test-btn phishing" data-url="http://gogle.com">
+                    <i class="fas fa-edit"></i> Typosquat
+                </button>
+                <button class="test-btn safe" data-url="https://www.youtube.com">
+                    <i class="fab fa-youtube"></i> YouTube
+                </button>
+                <button class="test-btn phishing" data-url="http://bit.ly/2XyZ123">
+                    <i class="fas fa-link"></i> Shortened
+                </button>
+                <button class="test-btn phishing" data-url="http://paypall.com">
+                    <i class="fas fa-dollar-sign"></i> PayPal Typo
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading Animation -->
+        <div id="loading" style="display:none;">
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">
+                    <h3>Analyzing URL...</h3>
+                    <p>Checking against 50+ security indicators</p>
+                </div>
+                <div class="loading-steps">
+                    <div class="step active"><i class="fas fa-check-circle"></i> URL Structure</div>
+                    <div class="step"><i class="fas fa-search"></i> Domain Analysis</div>
+                    <div class="step"><i class="fas fa-robot"></i> ML Detection</div>
+                    <div class="step"><i class="fas fa-chart-bar"></i> Generating Report</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="result" style="display:none;">
+            <div class="result-card">
+                <div class="result-header">
+                    <div class="result-icon" id="resultIcon">
+                        <i class="fas fa-shield-halved"></i>
+                    </div>
+                    <div class="result-title">
+                        <h2 id="statusTitle">Analysis Complete</h2>
+                        <p id="statusSubtitle">URL: <span id="analyzedUrl">-</span></p>
+                    </div>
+                    <div class="result-score">
+                        <span class="score-label">Risk Score</span>
+                        <span class="score-value" id="riskScore">0%</span>
+                    </div>
+                </div>
+
+                <div class="result-body">
+                    <div class="risk-factors">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Risk Factors Found</h3>
+                        <div id="riskList"></div>
+                    </div>
+
+                    <div class="explanation-box">
+                        <h3><i class="fas fa-info-circle"></i> Detailed Analysis</h3>
+                        <div id="explanation" class="explanation-text"></div>
+                    </div>
+
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-icon"><i class="fas fa-percentage"></i></div>
+                            <div class="metric-info">
+                                <span class="metric-label">Confidence</span>
+                                <span class="metric-value" id="confidenceValue">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="confidenceBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon phishing-color"><i class="fas fa-skull"></i></div>
+                            <div class="metric-info">
+                                <span class="metric-label">Phishing</span>
+                                <span class="metric-value" id="phishingProb">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill danger" id="phishingBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon safe-color"><i class="fas fa-check-circle"></i></div>
+                            <div class="metric-info">
+                                <span class="metric-label">Legitimate</span>
+                                <span class="metric-value" id="legitimateProb">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill success" id="legitimateBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metrics-details">
+                        <h3><i class="fas fa-chart-bar"></i> URL Metrics</h3>
+                        <div class="metrics-grid-4" id="urlMetrics">
+                            <div class="metric-item">
+                                <span class="metric-label">Length</span>
+                                <span class="metric-value" id="urlLength">-</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Suspicious Keywords</span>
+                                <span class="metric-value" id="suspiciousCount">-</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">HTTPS</span>
+                                <span class="metric-value" id="httpsStatus">-</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">IP Address</span>
+                                <span class="metric-value" id="ipStatus">-</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Shortened</span>
+                                <span class="metric-value" id="shortenedStatus">-</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Suspicious TLD</span>
+                                <span class="metric-value" id="tldStatus">-</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Trusted Domain</span>
+                                <span class="metric-value" id="trustedStatus">-</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Typosquatting</span>
+                                <span class="metric-value" id="typoStatus">-</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Domain Age</span>
+                                <span class="metric-value" id="domainAge">-</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Entropy</span>
+                                <span class="metric-value" id="entropyValue">-</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Risk Score</span>
+                                <span class="metric-value" id="riskScoreDisplay">-</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Detection Method</span>
+                                <span class="metric-value" id="detectionMethod">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Footer -->
+        <div class="stats-footer">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <i class="fas fa-database"></i>
+                    <span>Features Analyzed</span>
+                    <strong id="statFeatures">50+</strong>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-brain"></i>
+                    <span>Detection Model</span>
+                    <strong>Hybrid AI</strong>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-clock"></i>
+                    <span>Response Time</span>
+                    <strong id="statTime">< 300ms</strong>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-shield"></i>
+                    <span>Status</span>
+                    <strong style="color: #48bb78;">● Online</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p><i class="fas fa-shield"></i> PhishGuard Pro v3.0 - Advanced Phishing Detection</p>
+            <p class="footer-note">⚠️ For educational purposes. Always verify URLs before entering sensitive information.</p>
+        </footer>
+    </div>
+
+    <!-- Toast notification container -->
+    <div id="toast-container"></div>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='script.js') }}?v=2024"></script>
+</body>
+</html>
