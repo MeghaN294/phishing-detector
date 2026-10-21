@@ -15,7 +15,7 @@
           referrerpolicy="no-referrer">
     
     <!-- External CSS with cache-busting -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=2024">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=2025">
     
     <!-- ============================================
          THEME OVERRIDE - INLINE FOR GUARANTEED SWITCHING
@@ -403,10 +403,7 @@
                         <h2 id="statusTitle">Analysis Complete</h2>
                         <p id="statusSubtitle">URL: <span id="analyzedUrl">-</span></p>
                     </div>
-                    <div class="result-score">
-                        <span class="score-label">Risk Score</span>
-                        <span class="score-value" id="riskScore">0%</span>
-                    </div>
+                   
                 </div>
 
                 <div class="result-body">
@@ -547,6 +544,6 @@
     <div id="toast-container"></div>
 
     <!-- JavaScript -->
-    <script src="{{ url_for('static', filename='script.js') }}?v=2024"></script>
+    <script src="{{ url_for('static', filename='script.js') }}?v=2025"></script>
 </body>
 </html>
