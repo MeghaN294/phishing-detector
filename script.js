@@ -41,9 +41,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const themeIcon = document.getElementById('themeIcon');
     const htmlRoot = document.getElementById('html-root') || document.documentElement;
 
-    console.log('🔍 Theme toggle initialized');
-    console.log('📦 HTML Root:', htmlRoot.tagName);
-
     function setTheme(isLight) {
         if (isLight) {
             htmlRoot.classList.add('light-mode');
@@ -52,7 +49,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 themeIcon.style.color = '#f6ad55';
             }
             localStorage.setItem('phishguard-theme', 'light');
-            console.log('☀️ LIGHT MODE ACTIVATED');
         } else {
             htmlRoot.classList.remove('light-mode');
             if (themeIcon) {
@@ -60,13 +56,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 themeIcon.style.color = '#a0aec0';
             }
             localStorage.setItem('phishguard-theme', 'dark');
-            console.log('🌙 DARK MODE ACTIVATED');
         }
-        console.log('📋 HTML classes:', htmlRoot.className);
     }
 
     const savedTheme = localStorage.getItem('phishguard-theme');
-    console.log('💾 Saved theme:', savedTheme);
     setTheme(savedTheme === 'light');
 
     if (themeToggle) {
@@ -74,15 +67,12 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             e.stopPropagation();
             const isLight = htmlRoot.classList.contains('light-mode');
-            console.log('🔄 Toggle clicked. Current:', isLight ? 'Light' : 'Dark');
             setTheme(!isLight);
         });
-    } else {
-        console.error('❌ Theme toggle button not found!');
     }
 
     // ============================================
-    // QUICK TEST BUTTONS
+    // QUICK TEST BUTTONS & EVENTS
     // ============================================
     document.querySelectorAll('.test-btn').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -94,9 +84,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // ============================================
-    // EVENT LISTENERS
-    // ============================================
     if (checkBtn) {
         checkBtn.addEventListener('click', checkURL);
     }
@@ -105,9 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
         urlInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') checkURL();
         });
-
         urlInput.focus();
-
         urlInput.addEventListener('keydown', (e) => {
             if (e.ctrlKey && e.key === 'Enter') {
                 e.preventDefault();
@@ -138,8 +123,6 @@ document.addEventListener('DOMContentLoaded', function() {
         animateLoading();
 
         try {
-            console.log('🔍 Sending request for URL:', url);
-
             const response = await fetch('/predict', {
                 method: 'POST',
                 headers: {
@@ -149,9 +132,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({ url: url })
             });
 
-            console.log('📡 Response status:', response.status);
-
-            // ✅ FIX: even 4xx/5xx might carry useful JSON payload
             let data;
             try {
                 data = await response.json();
@@ -163,7 +143,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(data.error || `Server returned ${response.status}`);
             }
 
-            console.log('📊 Response data:', data);
             displayResults(data);
 
         } catch (error) {
@@ -182,9 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const steps = document.querySelectorAll('.step');
         steps.forEach((step, index) => {
             step.className = 'step';
-            if (index === 0) {
-                step.classList.add('active');
-            }
+            if (index === 0) step.classList.add('active');
         });
 
         steps.forEach((step, index) => {
@@ -199,28 +176,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ============================================
-    // RESET THE RESULT CARD STATE
-    // (so that old classes don't leak between checks)
+    // RESET RESULT CARD STATE
     // ============================================
     function resetResultCardState() {
-        if (resultCard) {
-            resultCard.classList.remove('invalid');
-        }
-        if (resultHeader) {
-            resultHeader.classList.remove('invalid');
-        }
-        if (resultIcon) {
-            resultIcon.className = 'result-icon';
-        }
-        if (resultScore) {
-            resultScore.classList.remove('invalid');
-        }
-        if (riskScore) {
-            riskScore.className = 'score-value';
-        }
-        if (statusTitle) {
-            statusTitle.style.color = '';
-        }
+        if (resultCard) resultCard.classList.remove('invalid');
+        if (resultHeader) resultHeader.classList.remove('invalid');
+        if (resultIcon) resultIcon.className = 'result-icon';
+        if (resultScore) resultScore.classList.remove('invalid');
+        if (riskScore) riskScore.className = 'score-value';
+        if (statusTitle) statusTitle.style.color = '';
     }
 
     // ============================================
@@ -230,20 +194,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!resultDiv) return;
         resultDiv.style.display = 'block';
 
-        // ✅ FIX: reset every visual state before rendering
         resetResultCardState();
 
-        if (riskList) {
-            riskList.innerHTML = '';
-        }
+        if (riskList) riskList.innerHTML = '';
 
-        // ✅ FIX: determine the three-way state
         const status = (data.status || '').toLowerCase();
-        const isInvalid =
-            data.is_invalid === true ||
-            status === 'invalid' ||
-            status === 'error';
-
+        const isInvalid = data.is_invalid === true || status === 'invalid' || status === 'error';
         const isPhishing = data.is_phishing === true;
 
         // ============================================
@@ -265,12 +221,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 riskScore.className = 'score-value invalid';
                 riskScore.textContent = '—';
             }
+            if (analyzedUrl) analyzedUrl.textContent = data.url || data.original_url || 'N/A';
 
-            if (analyzedUrl) {
-                analyzedUrl.textContent = data.url || data.original_url || 'N/A';
-            }
-
-            // Show the specific validation error
             if (riskList) {
                 const tag = document.createElement('span');
                 tag.className = 'risk-tag invalid';
@@ -285,7 +237,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 explanation.innerHTML = escapeHtml(text).replace(/\n/g, '<br>');
             }
 
-            // Zero out metrics that don't apply
             zeroOutMetrics();
             if (detectionMethod) {
                 detectionMethod.textContent = 'Validation';
@@ -297,7 +248,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // ============================================
-        // STATE 2: PHISHING
+        // STATE 2 & 3: PHISHING / SAFE
         // ============================================
         if (isPhishing) {
             if (resultIcon) {
@@ -308,14 +259,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 statusTitle.textContent = '🚨 PHISHING URL DETECTED!';
                 statusTitle.style.color = '#fc8181';
             }
-            if (riskScore) {
-                riskScore.className = 'score-value danger';
-            }
-        }
-        // ============================================
-        // STATE 3: SAFE
-        // ============================================
-        else {
+            if (riskScore) riskScore.className = 'score-value danger';
+        } else {
             if (resultIcon) {
                 resultIcon.classList.add('safe');
                 resultIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
@@ -324,38 +269,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 statusTitle.textContent = '✅ SAFE URL';
                 statusTitle.style.color = '#48bb78';
             }
-            if (riskScore) {
-                riskScore.className = 'score-value success';
-            }
+            if (riskScore) riskScore.className = 'score-value success';
         }
 
-        // ============================================
-        // Common rendering (phishing / safe)
-        // ============================================
-        if (analyzedUrl) {
-            analyzedUrl.textContent = data.url || data.original_url || 'N/A';
-        }
+        if (analyzedUrl) analyzedUrl.textContent = data.url || data.original_url || 'N/A';
 
         const score = data.risk_score || 0;
-        if (riskScore) {
-            riskScore.textContent = score + '%';
-        }
-        if (riskScoreDisplay) {
-            riskScoreDisplay.textContent = score + '%';
+        if (riskScore) riskScore.textContent = score + '%';
+        if (riskScoreDisplay) riskScoreDisplay.textContent = score + '%';
+
+        // ============================================
+        // DETECTION METHOD
+        // ============================================
+        if (detectionMethod) {
+            const method = data.detection_method || 'Hybrid AI';
+            detectionMethod.textContent = method;
+            detectionMethod.style.color = method === 'Rule-Based' ? '#f6ad55' : '#667eea';
         }
 
-        if (detectionMethod) {
-            if (data.ml_probability) {
-                detectionMethod.textContent = 'ML + Rules';
-                detectionMethod.style.color = '#667eea';
-            } else if (data.risky_features && data.risky_features.length > 0) {
-                detectionMethod.textContent = 'Rule-Based';
-                detectionMethod.style.color = '#f6ad55';
-            } else {
-                detectionMethod.textContent = 'Analysis';
-                detectionMethod.style.color = '#a0aec0';
-            }
-        }
+        // ============================================
+        // RISK FACTORS LIST
+        // ============================================
+        let hasTypoInFeatures = false;
 
         if (data.risky_features && data.risky_features.length > 0 && riskList) {
             data.risky_features.forEach(feature => {
@@ -363,6 +298,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 tag.className = 'risk-tag';
                 tag.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${escapeHtml(feature)}`;
                 riskList.appendChild(tag);
+
+                // Fail-safe check: look for keywords in the text itself
+                const lowerFeature = feature.toLowerCase();
+                if (lowerFeature.includes('typosquat') || lowerFeature.includes('mimics')) {
+                    hasTypoInFeatures = true;
+                }
             });
         } else if (riskList) {
             const tag = document.createElement('span');
@@ -371,6 +312,9 @@ document.addEventListener('DOMContentLoaded', function() {
             riskList.appendChild(tag);
         }
 
+        // ============================================
+        // EXPLANATION
+        // ============================================
         if (explanation) {
             if (data.explanation) {
                 explanation.innerHTML = escapeHtml(data.explanation).replace(/\n/g, '<br>');
@@ -381,13 +325,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
+        // ============================================
+        // PROBABILITY BARS
+        // ============================================
         const confidence = data.confidence || 0;
-        if (confidenceValue) {
-            confidenceValue.textContent = (confidence * 100).toFixed(1) + '%';
-        }
-        if (confidenceBar) {
-            confidenceBar.style.width = (confidence * 100) + '%';
-        }
+        if (confidenceValue) confidenceValue.textContent = (confidence * 100).toFixed(1) + '%';
+        if (confidenceBar) confidenceBar.style.width = (confidence * 100) + '%';
 
         const probability = data.probability || { phishing: 0, legitimate: 0 };
         const phishingPct = (probability.phishing || 0) * 100;
@@ -399,9 +342,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (legitimateBar) legitimateBar.style.width = legitPct + '%';
 
         // ============================================
-        // Feature metrics
-        // NOTE: features may be empty for rule-based-only results.
-        // ✅ FIX: also try the top-level fallbacks (e.g. url_length)
+        // METRICS
         // ============================================
         const features = data.features || {};
         const getFeature = (key) =>
@@ -441,10 +382,20 @@ document.addEventListener('DOMContentLoaded', function() {
             trustedStatus.style.color = trusted ? '#48bb78' : '#fc8181';
         }
 
-        const typosquatting = data.typosquatting_score || features._typosquatting_score || 0;
+        // ============================================
+        // FAIL-SAFE TYPOSQUATTING UI UPDATE
+        // ============================================
         if (typoStatus) {
-            typoStatus.textContent = typosquatting > 0 ? `⚠️ Yes (${typosquatting}/10)` : '✅ No';
-            typoStatus.style.color = typosquatting > 0 ? '#fc8181' : '#48bb78';
+            // We check BOTH the boolean from backend AND the text from risky_features
+            const isTypo = (data.is_typo === true) || hasTypoInFeatures;
+            
+            if (isTypo) {
+                typoStatus.textContent = '❌ Yes';
+                typoStatus.style.color = '#fc8181';
+            } else {
+                typoStatus.textContent = '✅ No';
+                typoStatus.style.color = '#48bb78';
+            }
         }
 
         if (domainAge) domainAge.textContent = features.domain_age_days || '0';
@@ -462,7 +413,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ============================================
-    // ZERO-OUT METRICS (for invalid state)
+    // ZERO-OUT METRICS
     // ============================================
     function zeroOutMetrics() {
         if (confidenceValue) confidenceValue.textContent = '0%';
@@ -494,7 +445,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ============================================
-    // ESCAPE HTML (prevent XSS from URL / features)
+    // ESCAPE HTML
     // ============================================
     function escapeHtml(str) {
         if (str === undefined || str === null) return '';
@@ -507,7 +458,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ============================================
-    // SHOW ERROR (TOAST NOTIFICATION)
+    // SHOW ERROR
     // ============================================
     function showError(message) {
         let toastContainer = document.getElementById('toast-container');
@@ -552,9 +503,7 @@ document.addEventListener('DOMContentLoaded', function() {
             toast.style.opacity = '0';
             toast.style.transition = 'opacity 0.3s ease';
             setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.remove();
-                }
+                if (toast.parentNode) toast.remove();
             }, 300);
         }, 5000);
     }
